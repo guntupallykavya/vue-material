@@ -116,7 +116,7 @@
         return this.localDate && Number(this.localDate)
       },
       parsedInputDate () {
-        const parsedDate = parse(this.inputDate, this.dateFormat, new Date())
+        const parsedDate = moment(this.inputDate, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"]).format("YYYY-MM-DD")
         return parsedDate && isValid(parsedDate) ? parsedDate : null
       },
       pattern () {
