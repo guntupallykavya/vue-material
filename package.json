@@ -46,6 +46,7 @@
     "vue-toc": "0.0.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.9.0",
     "autoprefixer": "^7.2.6",
     "avoriaz": "^6.3.0",
     "axios": "^0.18.0",
