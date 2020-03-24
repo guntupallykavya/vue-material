@@ -10570,25 +10570,13 @@ exports.default = {
       return _typeof(this.value) === 'object' && this.value instanceof Date && (0, _isValid2.default)(this.value);
     },
     localString: function localString() {
-      return this.localDate && (0, _format2.default)(this.localDate, this.dateFormat);
+      return this.localDate && (0, _moment2.default)(this.localDate).format(this.locale.dateFormat);
     },
     localNumber: function localNumber() {
       return this.localDate && Number(this.localDate);
     },
     parsedInputDate: function parsedInputDate() {
-      var parsedDate = (0, _parse2.default)(this.inputDate, this.dateFormat, new Date());
-      return parsedDate && (0, _isValid2.default)(parsedDate) ? parsedDate : null;
-    },
-    pattern: function pattern() {
-      return this.dateFormat.replace(/yyyy|MM|dd/g, function (match) {
-        switch (match) {
-          case 'yyyy':
-            return '[0-9]{4}';
-          case 'MM':
-          case 'dd':
-            return '[0-9]{2}';
-        }
-      });
+      return this.inputDate && this.isFormatValid(this.inputDate) ? (0, _moment2.default)(this.inputDate).format(this.locale.dateFormat) : null;
     }
   },
   watch: {
@@ -10633,7 +10621,7 @@ exports.default = {
     },
     dateFormat: function dateFormat() {
       if (this.localDate) {
-        this.inputDate = (0, _format2.default)(this.localDate, this.dateFormat);
+        this.inputDate = (0, _moment2.default)(this.localDate).format(this.locale.dateFormat);
       }
     }
   },
@@ -10664,6 +10652,9 @@ exports.default = {
         this.localDate = null;
       }
     },
+    isFormatValid: function isFormatValid(date) {
+      return (0, _moment2.default)(date, ["YYYYMMDD", "MM/DD/YYYY", "YYYY-MM-DD", "DD/MMM/YYYY"], true).isValid();
+    },
     valueDateToLocalDate: function valueDateToLocalDate() {
       if (this.isModelNull) {
         this.localDate = null;
@@ -10672,10 +10663,8 @@ exports.default = {
       } else if (this.isModelTypeDate) {
         this.localDate = this.value;
       } else if (this.isModelTypeString) {
-        var parsedDate = (0, _parse2.default)(this.value, this.dateFormat, new Date());
-
-        if ((0, _isValid2.default)(parsedDate)) {
-          this.localDate = (0, _parse2.default)(this.value, this.dateFormat, new Date());
+        if (this.isFormatValid(this.value)) {
+          this.localDate = (0, _moment2.default)(this.value).format(this.locale.dateFormat);
         } else {
           _vue2.default.util.warn('The datepicker value is not a valid date. Given value: ' + this.value + ', format: ' + this.dateFormat);
         }

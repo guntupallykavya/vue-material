@@ -111,26 +111,25 @@
         return typeof this.value === 'object' && this.value instanceof Date && isValid(this.value)
       },
       localString () {
-        return this.localDate && format(this.localDate, this.dateFormat)
+        return this.localDate && moment(this.localDate).format(this.locale.dateFormat)
       },
       localNumber () {
         return this.localDate && Number(this.localDate)
       },
       parsedInputDate () {
-        const parsedDate = parse(this.inputDate, this.dateFormat, new Date())
-        return parsedDate && isValid(parsedDate) ? parsedDate : null
+        return this.inputDate && this.isFormatValid(this.inputDate)? moment(this.inputDate).format(this.locale.dateFormat) : null
       },
-      pattern () {
-        return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
-          switch (match) {
-          case 'yyyy':
-            return '[0-9]{4}'
-          case 'MM':
-          case 'dd':
-            return '[0-9]{2}'
-          }
-        })
-      }
+      // pattern () {
+      //   return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
+      //     switch (match) {
+      //     case 'yyyy':
+      //       return '[0-9]{4}'
+      //     case 'MM':
+      //     case 'dd':
+      //       return '[0-9]{2}'
+      //     }
+      //   })
+      // }
     },
     watch: {
       inputDate (value) {
@@ -173,7 +172,7 @@
       },
       dateFormat () {
         if (this.localDate) {
-          this.inputDate = format(this.localDate, this.dateFormat)
+          this.inputDate = moment(this.localDate).format(this.locale.dateFormat)
         }
       }
     },
@@ -204,6 +203,9 @@
           this.localDate = null
         }
       },
+      isFormatValid (date) {
+        return moment(date, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"], true).isValid()
+      },
       valueDateToLocalDate () {
         if (this.isModelNull) {
           this.localDate = null
@@ -212,10 +214,8 @@
         } else if (this.isModelTypeDate) {
           this.localDate = this.value
         } else if (this.isModelTypeString) {
-          let parsedDate = parse(this.value, this.dateFormat, new Date())
-
-          if (isValid(parsedDate)) {
-            this.localDate = parse(this.value, this.dateFormat, new Date())
+          if (this.isFormatValid(this.value)) {
+            this.localDate = moment(this.value).format(this.locale.dateFormat)
           } else {
             Vue.util.warn(`The datepicker value is not a valid date. Given value: ${this.value}, format: ${this.dateFormat}`)
           }
