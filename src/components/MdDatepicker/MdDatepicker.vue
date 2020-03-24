@@ -1,7 +1,7 @@
 <template>
   <md-field :class="['md-datepicker', { 'md-native': !this.mdOverrideNative }]" md-clearable>
     <md-date-icon class="md-date-icon" @click.native="toggleDialog" />
-    <md-input :type="type" ref="input" v-model="inputDate" @focus.native="onFocus" :pattern="pattern" />
+    <md-input :type="type" ref="input" v-model="inputDate" @focus.native="onFocus" />
 
     <slot />
 
@@ -85,7 +85,7 @@
           : 'date'
       },
       dateFormat () {
-        return 'yyyyMMdd' || 'yyyy-MM-dd'
+        return this.locale.dateFormat || 'yyyy-MM-dd'
       },
       modelType () {
         if (this.isModelTypeString) {
@@ -117,7 +117,7 @@
         return this.localDate && Number(this.localDate)
       },
       parsedInputDate () {
-        const parsedDate = moment(this.inputDate, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"]).format("YYYY-MM-DD")
+        const parsedDate = parse(this.inputDate, this.dateFormat, new Date())
         return parsedDate && isValid(parsedDate) ? parsedDate : null
       },
       pattern () {

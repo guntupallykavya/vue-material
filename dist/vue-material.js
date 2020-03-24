@@ -10544,7 +10544,7 @@ exports.default = {
       return this.mdOverrideNative ? 'text' : 'date';
     },
     dateFormat: function dateFormat() {
-      return 'yyyyMMdd' || 'yyyy-MM-dd';
+      return this.locale.dateFormat || 'yyyy-MM-dd';
     },
     modelType: function modelType() {
       if (this.isModelTypeString) {
@@ -10576,7 +10576,7 @@ exports.default = {
       return this.localDate && Number(this.localDate);
     },
     parsedInputDate: function parsedInputDate() {
-      var parsedDate = (0, _moment2.default)(this.inputDate, ["YYYYMMDD", "MM/DD/YYYY", "YYYY-MM-DD", "DD/MMM/YYYY"]).format("YYYY-MM-DD");
+      var parsedDate = (0, _parse2.default)(this.inputDate, this.dateFormat, new Date());
       return parsedDate && (0, _isValid2.default)(parsedDate) ? parsedDate : null;
     },
     pattern: function pattern() {
@@ -44275,7 +44275,7 @@ var render = function() {
       _vm._v(" "),
       _c("md-input", {
         ref: "input",
-        attrs: { type: _vm.type, pattern: _vm.pattern },
+        attrs: { type: _vm.type },
         nativeOn: {
           focus: function($event) {
             return _vm.onFocus($event)
