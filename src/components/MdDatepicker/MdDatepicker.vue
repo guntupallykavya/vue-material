@@ -32,6 +32,7 @@
   import MdDebounce from 'core/utils/MdDebounce'
   import MdField from 'components/MdField/MdField'
   import MdInput from 'components/MdField/MdInput/MdInput'
+  import moment from 'moment'
 
   export default {
     name: 'MdDatepicker',
