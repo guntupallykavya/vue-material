@@ -1,7 +1,7 @@
 <template>
   <md-field :class="['md-datepicker', { 'md-native': !this.mdOverrideNative }]" md-clearable>
     <md-date-icon class="md-date-icon" @click.native="toggleDialog" />
-    <md-input :type="type" ref="input" v-model="inputDate" @focus.native="onFocus" :pattern="pattern" />
+    <md-input :type="type" ref="input" v-model="inputDate" @focus.native="onFocus" />
 
     <slot />
 
@@ -32,6 +32,7 @@
   import MdDebounce from 'core/utils/MdDebounce'
   import MdField from 'components/MdField/MdField'
   import MdInput from 'components/MdField/MdInput/MdInput'
+  import moment from 'moment'
 
   export default {
     name: 'MdDatepicker',
@@ -116,17 +117,22 @@
         return this.localDate && Number(this.localDate)
       },
       parsedInputDate () {
-        const parsedDate = parse(this.inputDate, this.dateFormat, new Date())
-        return parsedDate && isValid(parsedDate) ? parsedDate : null
+        if (this.isFormatValid(this.inputDate)) {
+          var formattedDateString = moment(this.inputDate).format('YYYY-MM-DD')
+          const parsedDate = parse(formattedDateString, this.dateFormat, new Date())
+          return parsedDate && isValid(parsedDate) ? parsedDate : null
+        } else {
+          return null
+        }
       },
       pattern () {
         return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
           switch (match) {
-          case 'yyyy':
-            return '[0-9]{4}'
-          case 'MM':
-          case 'dd':
-            return '[0-9]{2}'
+            case 'yyyy':
+              return '[0-9]{4}'
+            case 'MM':
+            case 'dd':
+              return '[0-9]{2}'
           }
         })
       }
@@ -159,15 +165,15 @@
       },
       mdModelType (type) {
         switch (type) {
-        case Date:
-          this.$emit('input', this.localDate)
-          break;
-        case String:
-          this.$emit('input', this.localString)
-          break;
-        case Number:
-          this.$emit('input', this.localNumber)
-          break;
+          case Date:
+            this.$emit('input', this.localDate)
+            break;
+          case String:
+            this.$emit('input', this.localString)
+            break;
+          case Number:
+            this.$emit('input', this.localNumber)
+            break;
         }
       },
       dateFormat () {
@@ -177,6 +183,9 @@
       }
     },
     methods: {
+      isFormatValid (date) {
+        return moment(date, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"], true).isValid()
+      },
       toggleDialog () {
         if (!isFirefox || this.mdOverrideNative) {
           this.showDialog = !this.showDialog
@@ -212,7 +221,6 @@
           this.localDate = this.value
         } else if (this.isModelTypeString) {
           let parsedDate = parse(this.value, this.dateFormat, new Date())
-
           if (isValid(parsedDate)) {
             this.localDate = parse(this.value, this.dateFormat, new Date())
           } else {
@@ -232,26 +240,21 @@
 <style lang="scss">
   @import "~components/MdAnimation/variables";
   @import "~components/MdLayout/mixins";
-
   .md-datepicker-overlay {
     opacity: 0;
-
     @include md-layout-xsmall {
       opacity: 1;
     }
   }
-
   .md-datepicker {
     &.md-native {
       label {
         top: 0 !important;
       }
     }
-
     .md-date-icon {
       cursor: pointer;
     }
-
     input[type=date]::-webkit-clear-button,
     input[type=date]::-webkit-inner-spin-button,
     input[type=date]::-webkit-calendar-picker-indicator {
