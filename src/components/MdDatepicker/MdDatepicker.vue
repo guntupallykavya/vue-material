@@ -111,25 +111,31 @@
         return typeof this.value === 'object' && this.value instanceof Date && isValid(this.value)
       },
       localString () {
-        return this.localDate && moment(this.localDate).format(this.locale.dateFormat)
+        return this.localDate && format(this.localDate, this.dateFormat)
       },
       localNumber () {
         return this.localDate && Number(this.localDate)
       },
       parsedInputDate () {
-        return this.inputDate && this.isFormatValid(this.inputDate)? moment(this.inputDate).format(this.locale.dateFormat) : null
+        if (this.isFormatValid(this.inputDate)) {
+          var formattedDateString = moment(this.inputDate).format('YYYY-MM-DD')
+          const parsedDate = parse(formattedDateString, this.dateFormat, new Date())
+          return parsedDate && isValid(parsedDate) ? parsedDate : null
+        } else {
+          return null
+        }
       },
-      // pattern () {
-      //   return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
-      //     switch (match) {
-      //     case 'yyyy':
-      //       return '[0-9]{4}'
-      //     case 'MM':
-      //     case 'dd':
-      //       return '[0-9]{2}'
-      //     }
-      //   })
-      // }
+      pattern () {
+        return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
+          switch (match) {
+            case 'yyyy':
+              return '[0-9]{4}'
+            case 'MM':
+            case 'dd':
+              return '[0-9]{2}'
+          }
+        })
+      }
     },
     watch: {
       inputDate (value) {
@@ -159,24 +165,27 @@
       },
       mdModelType (type) {
         switch (type) {
-        case Date:
-          this.$emit('input', this.localDate)
-          break;
-        case String:
-          this.$emit('input', this.localString)
-          break;
-        case Number:
-          this.$emit('input', this.localNumber)
-          break;
+          case Date:
+            this.$emit('input', this.localDate)
+            break;
+          case String:
+            this.$emit('input', this.localString)
+            break;
+          case Number:
+            this.$emit('input', this.localNumber)
+            break;
         }
       },
       dateFormat () {
         if (this.localDate) {
-          this.inputDate = moment(this.localDate).format(this.locale.dateFormat)
+          this.inputDate = format(this.localDate, this.dateFormat)
         }
       }
     },
     methods: {
+      isFormatValid (date) {
+        return moment(date, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"], true).isValid()
+      },
       toggleDialog () {
         if (!isFirefox || this.mdOverrideNative) {
           this.showDialog = !this.showDialog
@@ -203,9 +212,6 @@
           this.localDate = null
         }
       },
-      isFormatValid (date) {
-        return moment(date, ["YYYYMMDD","MM/DD/YYYY","YYYY-MM-DD","DD/MMM/YYYY"], true).isValid()
-      },
       valueDateToLocalDate () {
         if (this.isModelNull) {
           this.localDate = null
@@ -214,8 +220,9 @@
         } else if (this.isModelTypeDate) {
           this.localDate = this.value
         } else if (this.isModelTypeString) {
-          if (this.isFormatValid(this.value)) {
-            this.localDate = moment(this.value).format(this.locale.dateFormat)
+          let parsedDate = parse(this.value, this.dateFormat, new Date())
+          if (isValid(parsedDate)) {
+            this.localDate = parse(this.value, this.dateFormat, new Date())
           } else {
             Vue.util.warn(`The datepicker value is not a valid date. Given value: ${this.value}, format: ${this.dateFormat}`)
           }
@@ -233,26 +240,21 @@
 <style lang="scss">
   @import "~components/MdAnimation/variables";
   @import "~components/MdLayout/mixins";
-
   .md-datepicker-overlay {
     opacity: 0;
-
     @include md-layout-xsmall {
       opacity: 1;
     }
   }
-
   .md-datepicker {
     &.md-native {
       label {
         top: 0 !important;
       }
     }
-
     .md-date-icon {
       cursor: pointer;
     }
-
     input[type=date]::-webkit-clear-button,
     input[type=date]::-webkit-inner-spin-button,
     input[type=date]::-webkit-calendar-picker-indicator {
